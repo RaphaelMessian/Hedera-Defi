@@ -1,10 +1,29 @@
-# hedera-smart-contracts
-Contains Hedera Smart Contract Service supporting files
+## Hedera-Defi
 
-# HTS Precompile
+This repo is a list of basic DeFi smart contract on Hedera
 
-- Solidity files updated on April 20, 2022 to add token create support
-- Solidity files updated on Jan 18, 2022
+## Setup environment
 
-# Stacking Reward Contract
+```shell
+cp .env.sample .env
+nano .env # edit the OPERATOR_ID and OPERATOR_KEY to match your Hedera Account and Private Key
+```
+
+## Installation
+
+```shell
+npm i
+npx hardhat compile
+```
+
+## Stacking Reward Contract
 Basic stacking reward contract on Hedera
+
+## Run
+
+```shell
+cd test
+node StackingReward.js 
+```
+
+
