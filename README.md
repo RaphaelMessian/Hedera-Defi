@@ -5,3 +5,6 @@ Contains Hedera Smart Contract Service supporting files
 
 - Solidity files updated on April 20, 2022 to add token create support
 - Solidity files updated on Jan 18, 2022
+
+# Stacking Reward Contract
+Basic stacking reward contract on Hedera
