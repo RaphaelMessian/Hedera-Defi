@@ -4,23 +4,32 @@
 // You can also run a script with `npx hardhat run <script>`. If you do that, Hardhat
 // will compile your contracts, add the Hardhat Runtime Environment's members to the
 // global scope, and execute the script.
-const hre = require("hardhat");
+console.clear();
+const  {deployContract,} = require("./utils");
+const {Client, AccountId, PrivateKey, ContractFunctionParameters} = require("@hashgraph/sdk");
+const fs = require('fs');
+require('dotenv').config({path: __dirname + '/'});
 
 async function main() {
-  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  const ONE_YEAR_IN_SECS = 365 * 24 * 60 * 60;
-  const unlockTime = currentTimestampInSeconds + ONE_YEAR_IN_SECS;
 
-  const lockedAmount = hre.ethers.utils.parseEther("1");
+  let client = Client.forTestnet();
+  const operatorPrKey = PrivateKey.fromString(process.env.OPERATOR_KEY);
+  const operatorAccountId = AccountId.fromString(process.env.OPERATOR_ID);
 
-  const Lock = await hre.ethers.getContractFactory("Lock");
-  const lock = await Lock.deploy(unlockTime, { value: lockedAmount });
-
-  await lock.deployed();
-
-  console.log(
-    `Lock with 1 ETH and unlock timestamp ${unlockTime} deployed to ${lock.address}`
+  client.setOperator(
+    operatorAccountId,
+    operatorPrKey
   );
+
+  const rawdataStackingReward = fs.readFileSync("../artifacts/contracts/StackingRewards/StakingRewards.sol/StakingRewards.json");
+  const rawdataStackingRewardContractJSon = JSON.parse(rawdataStackingReward);
+  const StackingRewardContractByteCode = rawdataStackingRewardContractJSon.bytecode;
+  const constructorParameters = new ContractFunctionParameters()
+      .addAddress(createStackingToken.toSolidityAddress())
+      .addAddress(createRewardToken.toSolidityAddress());
+  const createStackingRewardContract = await deployContract(client, StackingRewardContractByteCode, 150000, operatorPrKey, constructorParameters);
+  
+  console.log(`- Contract created ${createStackingRewardContract.toString()} ,Contract Address ${createStackingRewardContract.toSolidityAddress()} -`);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

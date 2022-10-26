@@ -7,8 +7,8 @@ function getClient() {
     // const client = Client.forName(process.env.HEDERA_NETWORK);
     const client = Client.forTestnet();
     client.setOperator(
-        AccountId.fromString("0.0.48697651"),
-        PrivateKey.fromString("4b52502ff5616890aff47091dde45e169968555f14c94bd6594182904852a04f")
+        AccountId.fromString(process.env.OPERATOR_ID),
+        PrivateKey.fromString(process.env.OPERATOR_KEY)
     );
     return client;
 }

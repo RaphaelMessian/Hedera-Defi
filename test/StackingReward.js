@@ -1,25 +1,20 @@
 console.clear();
 const  {getClient, createAccount, deployContract, createFungibleToken, mintToken, TokenBalance, TokenTransfer} = require("./utils");
-const {Client, AccountId, PrivateKey, ContractFunctionParameters, ContractExecuteTransaction, TokenId, ContractId, Hbar , TokenAssociateTransaction} = require("@hashgraph/sdk");
-const dotenv = require("dotenv");
+const {Client, AccountId, PrivateKey, ContractFunctionParameters, ContractExecuteTransaction, TokenAssociateTransaction} = require("@hashgraph/sdk");
 const fs = require('fs');
-dotenv.config({ path: '../.env' });
-
+require('dotenv').config({path: __dirname + '../.env'});
 async function main() {
     await StackingReward();
  }
 
 async function StackingReward() {
     
-    const operatorPrKey = PrivateKey.fromString("66728f3724dee8c534fcbad1cec1e7678357ac711c16286b75de232fe4c82736")
-    const operatorPuKey = operatorPrKey.publicKey;
-    const operatorAccountId = AccountId.fromString("0.0.48696115")
+    
+    let client = getClient();
 
-    const client = Client.forTestnet();
-    client.setOperator(
-        operatorAccountId,
-        operatorPrKey
-    );
+    const operatorPrKey = PrivateKey.fromString(process.env.OPERATOR_KEY);
+    const operatorPuKey = operatorPrKey.publicKey;
+    const operatorAccountId = AccountId.fromString(process.env.OPERATOR_ID);
 
     console.log(`\nSTEP 1 - Create Alice Account and Admin Account`);
     const aliceKey = PrivateKey.generateED25519();
@@ -167,8 +162,6 @@ async function StackingReward() {
     // console.log(`Add Reward to the contract transaction status ${record2.contractFunctionResult.getUint32()}.`);
     // console.log(`Add Reward to the contract transaction status ${addRewardReceipt2.status.toString()}.`);
 
-    
-
 };
 
 main()
@@ -177,16 +170,3 @@ main()
     console.error(error);
     process.exit(1);
   });
-
-     // const associateToken = await new TokenAssociateTransaction()
-    //     .setAccountId(createStackingRewardContract) // receiver ID
-    //     .setTokenIds([createRewardToken]) // token IDs
-    //     .freezeWith(client)
-    //     .sign(operatorPrKey);
-    // const associateTokenTx = await associateToken.execute(client);
-    // const associateTokenRx = await associateTokenTx.getReceipt(client);
-
-    // const associateTokenStatus = associateTokenRx.status;
-
-    // const rewardTokenTransfert = await TokenTransfer(createRewardToken, operatorAccountId, createStackingRewardContract, 10, client);
-    // console.log(`- Token Transfert to contract: ${addReward.status.toString()}`);
