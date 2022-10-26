@@ -13,17 +13,14 @@ nano .env # edit the OPERATOR_ID and OPERATOR_KEY to match your Hedera Account a
 
 ```shell
 npm i
-npx hardhat compile
+npx hardhat compile # to compile Smart Contract
 ```
-
-## Stacking Reward Contract
-Basic stacking reward contract on Hedera
 
 ## Run
 
 ```shell
 cd test
-node StackingReward.js 
+node xxxxxx.js 
 ```
 
 
