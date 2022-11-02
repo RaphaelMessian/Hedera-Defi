@@ -35,9 +35,9 @@ contract StakingRewards is HederaTokenService {
     mapping(address => uint) public balanceOf;
 
     constructor(address _stakingToken, address _rewardToken) {
-        owner = msg.sender;
         stakingToken = IERC20(_stakingToken);
         rewardsToken = IERC20(_rewardToken);
+        owner = msg.sender;
     }
 
     modifier onlyOwner() {
@@ -84,7 +84,7 @@ contract StakingRewards is HederaTokenService {
             totalSupply;
     }
 
-    function initialize() external {
+    function initialize() external onlyOwner{
         int responseAssociateStaking = HederaTokenService.associateToken(address(this), address(stakingToken));
         if (responseAssociateStaking != HederaResponseCodes.SUCCESS) {
             revert ("Associate Failed");
@@ -128,12 +128,16 @@ contract StakingRewards is HederaTokenService {
             rewards[msg.sender] = 0;
             int responseTransfert = HederaTokenService.transferToken(address(rewardsToken), address(this), msg.sender, int64(uint64(reward)));
             if (responseTransfert != HederaResponseCodes.SUCCESS) {
-            revert ("Transfer Failed");
-        }
+                revert ("Transfer Failed");
+            }   
         }
     }
 
-    function setRewardsDuration(uint _duration) external onlyOwner {
+    function setRewardsDuration(uint _duration, uint reward) external onlyOwner {
+        int responseTransfert = HederaTokenService.transferToken(address(rewardsToken), msg.sender, address(this), int64(uint64(reward)));
+            if (responseTransfert != HederaResponseCodes.SUCCESS) {
+                revert ("Transfer Failed");
+            }   
         require(finishAt < block.timestamp, "reward duration not finished");
         duration = _duration;
     }

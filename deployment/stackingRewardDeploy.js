@@ -1,5 +1,5 @@
 console.clear();
-const  {deployContract,} = require("./utils");
+const  {deployContract,} = require("../scripts/utils");
 const {Client, AccountId, PrivateKey, ContractFunctionParameters} = require("@hashgraph/sdk");
 const fs = require('fs');
 require('dotenv').config({path: __dirname + '/'});

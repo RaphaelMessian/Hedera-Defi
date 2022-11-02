@@ -15,6 +15,7 @@
   "dependencies": {
     "@hashgraph/sdk": "^2.18.5",
     "@openzeppelin/contracts": "^4.7.3",
+    "chai": "^4.3.6",
     "dotenv": "^16.0.3",
     "fs": "^0.0.1-security"
   }
