@@ -12,13 +12,13 @@ const operatorAccountId = AccountId.fromString(process.env.OPERATOR_ID);
 
 
 async function main() {
-    await StackingReward();
+    await LockRewards();
  }
 
 
- async function initialize(createStackingRewardContract) {
+ async function initialize(createLockRewardsContract) {
     const initializeTx = await new ContractExecuteTransaction()
-        .setContractId(createStackingRewardContract)
+        .setContractId(createLockRewardsContract)
         .setFunction("initialize")
         .setGas(1500000)
         // .setPayableAmount(new Hbar(100))
@@ -28,13 +28,13 @@ async function main() {
     console.log(`- initialize transaction ${initializeReceipt.status.toString()}.`);
  }
 
- async function addReward(createStackingRewardContract) {
+ async function addReward(createLockRewardsContract) {
     let contractFunctionParameters = new ContractFunctionParameters()
             .addUint256(10)
             .addUint256(10);
 
     const setDurationTx = await new ContractExecuteTransaction()
-        .setContractId(createStackingRewardContract)
+        .setContractId(createLockRewardsContract)
         .setFunction("setRewardsDuration", contractFunctionParameters)
         .setGas(1500000);
 
@@ -43,13 +43,13 @@ async function main() {
     console.log(`- Add Reward to the contract transaction status ${addRewardReceipt.status.toString()}.`);
  }
 
- async function stakeToken(createStackingRewardContract, client, key) {
+ async function stakeToken(createLockRewardsContract, client, key) {
     let contractFunctionParameters = new ContractFunctionParameters()
         .addUint256(10);
         // .addAddress(createStackingToken.toSolidityAddress());
 
     const stakeTokenTx = await new ContractExecuteTransaction()
-        .setContractId(createStackingRewardContract)
+        .setContractId(createLockRewardsContract)
         .setFunction("stake", contractFunctionParameters)
         .setGas(900000)
         .freezeWith(client)
@@ -61,12 +61,12 @@ async function main() {
     console.log(`- Stake token to the contract transaction status ${stakeTokenRx.status.toString()}.`);
  }
 
- async function notifyReward(createStackingRewardContract) {
+ async function notifyReward(createLockRewardsContract) {
     let contractFunctionParameters = new ContractFunctionParameters()
         .addUint256(10);
 
     const notifyRewardTx = await new ContractExecuteTransaction()
-        .setContractId(createStackingRewardContract)
+        .setContractId(createLockRewardsContract)
         .setFunction("notifyRewardAmount", contractFunctionParameters)
         .setGas(900000)
         .execute(client);
@@ -75,9 +75,9 @@ async function main() {
     console.log(`- notify Reward to the contract transaction status ${notifyRewardRx.status.toString()}.`);
  }
 
- async function getReward(createStackingRewardContract, client) {
+ async function getReward(createLockRewardsContract, client) {
     const getRewardTx = await new ContractExecuteTransaction()
-        .setContractId(createStackingRewardContract)
+        .setContractId(createLockRewardsContract)
         .setFunction("getReward")
         .setGas(900000)
         .execute(client);
@@ -87,13 +87,13 @@ async function main() {
     console.log(`- Get reward transaction status ${getRewardRx.status.toString()}.`);
  }
 
-async function withdrawToken(createStackingRewardContract, client, key) {
+async function withdrawToken(createLockRewardsContract, client, key) {
     let contractFunctionParameters = new ContractFunctionParameters()
         .addUint256(10);
         // .addAddress(createStackingToken.toSolidityAddress());
 
     const withdrawTokenTx = await new ContractExecuteTransaction()
-        .setContractId(createStackingRewardContract)
+        .setContractId(createLockRewardsContract)
         .setFunction("withdraw", contractFunctionParameters)
         .setGas(900000)
         .freezeWith(client)
@@ -107,7 +107,7 @@ async function withdrawToken(createStackingRewardContract, client, key) {
 
 
 
-async function StackingReward() {
+async function LockRewards() {
 
     console.log(`\nSTEP 1 - Create Alice Account and Admin Account`);
     const aliceKey = PrivateKey.generateED25519();
@@ -128,19 +128,19 @@ async function StackingReward() {
     const mintRewardToken = await mintToken(createRewardToken, client, 10, operatorPrKey);
     console.log(`- New 10 Reward Token minted transaction status: ${mintRewardToken.status.toString()}`);
 
-    console.log(`\nSTEP 3 - Create and deploy Stacking Reward Contract`);
-    const rawdataStackingReward = fs.readFileSync("../artifacts/contracts/StackingRewards/StakingRewards.sol/StakingRewards.json");
-    const rawdataStackingRewardContractJSon = JSON.parse(rawdataStackingReward);
-    const StackingRewardContractByteCode = rawdataStackingRewardContractJSon.bytecode;
+    console.log(`\nSTEP 3 - Create and deploy Lock Reward Contract`);
+    const rawdataLockRewards = fs.readFileSync("../artifacts/contracts/Rewards/LockRewards.sol/LockRewards.json");
+    const rawdataLockRewardsContractJSon = JSON.parse(rawdataLockRewards);
+    const lockRewardsContractByteCode = rawdataLockRewardsContractJSon.bytecode;
     const constructorParameters = new ContractFunctionParameters()
         .addAddress(createStackingToken.toSolidityAddress())
         .addAddress(createRewardToken.toSolidityAddress());
-    const createStackingRewardContract = await deployContract(client, StackingRewardContractByteCode, 150000, operatorPrKey, constructorParameters);
+    const createLockRewardsContract = await deployContract(client, lockRewardsContractByteCode, 150000, operatorPrKey, constructorParameters);
     
-    console.log(`- Contract created ${createStackingRewardContract.toString()} ,Contract Address ${createStackingRewardContract.toSolidityAddress()} -`);
+    console.log(`- Contract created ${createLockRewardsContract.toString()} ,Contract Address ${createLockRewardsContract.toSolidityAddress()} -`);
 
     const initializeTx = await new ContractExecuteTransaction()
-        .setContractId(createStackingRewardContract)
+        .setContractId(createLockRewardsContract)
         .setFunction("initialize")
         .setGas(1500000)
         // .setPayableAmount(new Hbar(100))
@@ -149,7 +149,7 @@ async function StackingReward() {
     const initializeReceipt = await initializeTx.getReceipt(client);
     console.log(`- initialize transaction ${initializeReceipt.status.toString()}.`);
 
-    // const rewardTokenTransfert = await TokenTransfer(createRewardToken, operatorAccountId,createStackingRewardContract, 10, client);
+    // const rewardTokenTransfert = await TokenTransfer(createRewardToken, operatorAccountId,createLockRewardsContract, 10, client);
     // console.log(`- Token Transfert to contract: ${rewardTokenTransfert.status.toString()}`)
 
     console.log(`\nSTEP 4 - Set the duration of the reward ditribution`);
@@ -159,7 +159,7 @@ async function StackingReward() {
         // .addAddress(createRewardToken.toSolidityAddress());
 
     const setDurationTx = await new ContractExecuteTransaction()
-        .setContractId(createStackingRewardContract)
+        .setContractId(createLockRewardsContract)
         .setFunction("setRewardsDuration", contractFunctionParameters)
         .setGas(1500000);
 
@@ -168,7 +168,7 @@ async function StackingReward() {
     console.log(`- Add Reward to the contract transaction status ${addRewardReceipt.status.toString()}.`);
 
     // const getBalanceTx1 = await new ContractExecuteTransaction()
-    // .setContractId(createStackingRewardContract)
+    // .setContractId(createLockRewardsContract)
     // .setFunction("totalSupply")
     // .setGas(200000)
     // .execute(client);
@@ -186,7 +186,7 @@ async function StackingReward() {
         // .addAddress(createStackingToken.toSolidityAddress());
 
     const stakeTokenTx = await new ContractExecuteTransaction()
-        .setContractId(createStackingRewardContract)
+        .setContractId(createLockRewardsContract)
         .setFunction("stake", contractFunctionParameters1)
         .setGas(900000)
         .freezeWith(aliceClient)
@@ -198,7 +198,7 @@ async function StackingReward() {
     console.log(`- Stake token to the contract transaction status ${stakeTokenRx.status.toString()}.`);
 
     const getBalanceTx = await new ContractExecuteTransaction()
-        .setContractId(createStackingRewardContract)
+        .setContractId(createLockRewardsContract)
         .setFunction("totalSupply")
         .setGas(200000)
         .execute(client);
@@ -213,7 +213,7 @@ async function StackingReward() {
         .addUint256(10);
 
     const notifyRewardTx = await new ContractExecuteTransaction()
-        .setContractId(createStackingRewardContract)
+        .setContractId(createLockRewardsContract)
         .setFunction("notifyRewardAmount", contractFunctionParameters2)
         .setGas(900000)
         .execute(client);
@@ -232,7 +232,7 @@ async function StackingReward() {
     console.log(`- tokenAssociateReceipt ${tokenAssociateReceipt.status.toString()}`);
 
     const getRewardTx = await new ContractExecuteTransaction()
-        .setContractId(createStackingRewardContract)
+        .setContractId(createLockRewardsContract)
         .setFunction("getReward")
         .setGas(900000)
         .execute(aliceClient);
@@ -245,7 +245,7 @@ async function StackingReward() {
     console.log(`- tokenBalance of Alice ${tokenBalanceReward.toString()}`)
 
     // const setDurationTx2 = await new ContractExecuteTransaction()
-    //     .setContractId(createStackingRewardContract)
+    //     .setContractId(createLockRewardsContract)
     //     .setFunction("getRewardTokenCount")
     //     .setGas(900000)
     //     // .setPayableAmount(new Hbar(100))
