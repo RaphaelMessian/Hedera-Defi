@@ -19,7 +19,7 @@ npx hardhat compile # to compile Smart Contract
 ## Run
 
 ```shell
-cd test
+cd scripts
 node xxxxxx.js 
 ```
 
