@@ -9,7 +9,7 @@ let client = getClient();
 const operatorPrKey = PrivateKey.fromString(process.env.OPERATOR_KEY);
 const operatorPuKey = operatorPrKey.publicKey;
 const operatorAccountId = AccountId.fromString(process.env.OPERATOR_ID);
-const scRewardsContract = ContractId.fromString('0.0.48831217');
+const scRewardsContract = ContractId.fromString('0.0.48831458');
 
 async function main() {
     const aliceKey = PrivateKey.generateED25519();
@@ -25,7 +25,7 @@ async function main() {
     const createRewardToken = await createFungibleToken("Reward Token", "RT", operatorAccountId, operatorPuKey, client, operatorPrKey);
     console.log(`- Stacking Token ${createStackingToken}, Stacking Token Address ${createStackingToken.toSolidityAddress()}`);
     console.log(`- Reward Token created ${createRewardToken}, Reward Token Address ${createRewardToken.toSolidityAddress()}`);
-    const mintStackingToken = await mintToken(createStackingToken, client, 10*1e8, aliceKey);
+    const mintStackingToken = await mintToken(createStackingToken, client, 10, aliceKey);
     console.log(`- New 10 Stacking Token minted transaction status: ${mintStackingToken.status.toString()}`);
     const tokenAssociate = await new TokenAssociateTransaction()
         .setAccountId(BobAccountId)
@@ -78,7 +78,7 @@ async function main() {
  async function addStakeAccount(scRewardsContract, accountId, amount) {
     let contractFunctionParameters = new ContractFunctionParameters()
             .addAddress(accountId.toSolidityAddress())
-            .addUint256(amount*1e18);
+            .addUint256(amount*1e8);
 
     const setDurationTx = await new ContractExecuteTransaction()
         .setContractId(scRewardsContract)
@@ -92,7 +92,7 @@ async function main() {
 
  async function addReward(scRewardsContract, amount) {
     let contractFunctionParameters = new ContractFunctionParameters()
-        .addUint256(amount*1e18);
+        .addUint256(amount*1e8);
 
     const notifyRewardTx = await new ContractExecuteTransaction()
         .setContractId(scRewardsContract)

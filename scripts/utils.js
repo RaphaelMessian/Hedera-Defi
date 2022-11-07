@@ -69,7 +69,7 @@ async function createFungibleToken(tokenName, tokenSymbol, treasuryAccountId, su
 async function mintToken(tokenId, client, amount, privatekey) {
     const tokenMintTx = await new TokenMintTransaction()
         .setTokenId(tokenId)
-        .setAmount(amount)
+        .setAmount(amount*1e8)
         .freezeWith(client)
         .sign(privatekey);
 
