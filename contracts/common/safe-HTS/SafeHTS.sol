@@ -100,7 +100,7 @@ library SafeHTS {
         require(responseCode == HederaResponseCodes.SUCCESS, "Safe NFTs transfer failed!");
     }
 
-    function safeTransferToken(address token, address sender, address receiver, uint amount) internal {
+    function safeTransferToken(address token, address sender, address receiver, int64 amount) internal {
         int32 responseCode;
         (bool success, bytes memory result) = precompileAddress.call(
             abi.encodeWithSelector(IHederaTokenService.transferToken.selector,

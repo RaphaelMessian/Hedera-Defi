@@ -1,7 +1,7 @@
 require('dotenv').config({ path: '../.env' });
 
 const { Client, AccountId, PrivateKey, AccountCreateTransaction, TokenCreateTransaction, ContractCreateFlow,
-     TokenType, TokenSupplyType,TokenInfoQuery, AccountBalanceQuery, TokenMintTransaction, TransferTransaction } = require("@hashgraph/sdk");
+     TokenType, TokenSupplyType,TokenInfoQuery, AccountBalanceQuery, TokenMintTransaction, TransferTransaction} = require("@hashgraph/sdk");
 
 function getClient() {
     // const client = Client.forName(process.env.HEDERA_NETWORK);
@@ -47,7 +47,7 @@ async function createFungibleToken(tokenName, tokenSymbol, treasuryAccountId, su
     const tokenCreateTx = await new TokenCreateTransaction()
         .setTokenName(tokenName)
         .setTokenSymbol(tokenSymbol)
-        .setDecimals(18)
+        .setDecimals(8)
         .setInitialSupply(0)
         .setTreasuryAccountId(treasuryAccountId)
         .setTokenType(TokenType.FungibleCommon)
@@ -94,8 +94,8 @@ async function TokenBalance(accountId, client) {
 async function TokenTransfer(tokenId, sender, receiver, amount, client) {
 
     const transferToken = await new TransferTransaction()
-        .addTokenTransfer(tokenId, sender, -amount) // Transfer 10 USDB
-        .addTokenTransfer(tokenId, receiver, amount)
+        .addTokenTransfer(tokenId, sender, -(amount*1e8))// Transfer 10 USDB
+        .addTokenTransfer(tokenId, receiver, amount*1e8)
         .freezeWith(client)
     
     const transferTokenSubmit = await transferToken.execute(client);
