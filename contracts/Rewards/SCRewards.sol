@@ -15,22 +15,30 @@ contract SCRewards  {
     IERC20 public stakingToken;
     IERC20  public rewardsToken;
 
+    address[] tokenAddress;
+    
     address public owner;
 
     struct UserInfo {
         uint num_shares;
-        uint last_claimed_amount;
+        mapping(address => uint) lastClaimedAmountT;
+    }
+
+    struct RewardsInfo {
+        uint amount;
+        bool exist;
     }
 
     uint public totalTokens;
-    uint public totalRewards;
+    uint[] public totalRewards;
 
     UserInfo userInfo;
 
     uint public reward;
     uint perShareRewards;
 
-    mapping (address => UserInfo) public userContribution;
+    mapping(address =>  UserInfo) public userContribution;
+    mapping (address => RewardsInfo) public rewardsAddress;
 
     constructor() {
         owner = msg.sender;
@@ -41,58 +49,53 @@ contract SCRewards  {
         _;
     }
 
-    function adjustReward(address claimer) internal {
-        reward = ((totalRewards - userContribution[claimer].last_claimed_amount).mul(userContribution[claimer].num_shares));
-        userContribution[claimer].last_claimed_amount = totalRewards;
-    }
-
-    function initialize(address _stakingToken, address _rewardsToken) external onlyOwner{
+    function initialize(address _stakingToken) external onlyOwner{
         require(_stakingToken != address(0), "stakingToken != address(0)");
-        require(_rewardsToken != address(0), "rewardsToken != address(0)");
         SafeHTS.safeAssociateToken(_stakingToken, address(this));
-        SafeHTS.safeAssociateToken(_rewardsToken, address(this));
         stakingToken = IERC20(_stakingToken);
-        rewardsToken = IERC20(_rewardsToken);
     }
 
-    function addStakeAccount(address sender, uint amount) external {
-        SafeHTS.safeAssociateToken(address(rewardsToken), address(msg.sender));
-        SafeHTS.safeTransferToken(address(stakingToken), sender, address(this), int64(uint64(amount)));
-        userInfo = UserInfo(amount, 0);
-        userContribution[msg.sender] = userInfo;
-        totalTokens += amount;
+    function addStakeAccount(uint _amount) external {
+        require(_amount != 0, "please provide amount");
+        SafeHTS.safeTransferToken(address(stakingToken), msg.sender, address(this), int64(uint64(_amount)));
+        userContribution[msg.sender].num_shares = _amount;
+        totalTokens += _amount;
     }
 
-    function addReward(uint amount) external onlyOwner {
-        SafeHTS.safeTransferToken(address(rewardsToken), address(owner), address(this), int64(uint64(amount)));
-        perShareRewards = amount.div(totalTokens);
-        totalRewards += perShareRewards;
+    function addReward(address _token, uint _amount) external onlyOwner {
+        require(_amount != 0, "please provide amount");
+        perShareRewards = _amount.div(totalTokens);
+        if(!rewardsAddress[_token].exist) {
+            tokenAddress.push(_token);
+            rewardsAddress[_token].exist = true;
+            rewardsAddress[_token].amount = perShareRewards;
+            SafeHTS.safeAssociateToken(_token, address(this));
+            SafeHTS.safeTransferToken(address(rewardsToken), address(owner), address(this), int64(uint64(_amount)));
+        } else {
+            rewardsAddress[_token].amount += perShareRewards;
+            SafeHTS.safeTransferToken(address(rewardsToken), address(owner), address(this), int64(uint64(_amount)));
+        }     
     }
     
-    function claimReward(address claimer) external returns (uint){
-        adjustReward(claimer);
+    function claimSpecificReward(address _token) public returns (uint){
+        if(userContribution[msg.sender].lastClaimedAmountT[_token] != 0){
+            reward = (rewardsAddress[_token].amount - userContribution[msg.sender].lastClaimedAmountT[_token]) * userContribution[msg.sender].num_shares;
+        } else {
+            reward = rewardsAddress[_token].amount * userContribution[msg.sender].num_shares;
+        }
+        userContribution[msg.sender].lastClaimedAmountT[_token] = rewardsAddress[_token].amount;
         SafeHTS.safeTransferToken(address(rewardsToken), address(this), address(msg.sender), int64(uint64(reward)));
         return reward;
     }
 
-    function transfer(address sender, address receiver, uint amount) external returns(uint){
-        adjustReward(sender);
-        adjustReward(receiver);
-        userContribution[sender].num_shares -= amount;
-        userContribution[receiver].num_shares += amount;
-        return userContribution[receiver].num_shares;
-    }
-
-    function mint(uint _amount, address sender) public {
-        adjustReward(sender);
-        totalTokens += _amount;
-        userContribution[msg.sender].num_shares += _amount;
-    }
-
-    function burn(uint _amount,  address sender) public {
-        adjustReward(sender);
-        totalTokens -= _amount;
-        userContribution[msg.sender].num_shares -= _amount;
+    function claimSeveralReward() public returns (uint){
+        for(uint i; i < tokenAddress.length; i++){
+            address token = tokenAddress[i];
+            reward += (rewardsAddress[token].amount - userContribution[msg.sender].lastClaimedAmountT[token]) * userContribution[msg.sender].num_shares;
+            userContribution[msg.sender].lastClaimedAmountT[token] = rewardsAddress[token].amount;
+            SafeHTS.safeTransferToken(address(token), address(this), address(msg.sender), int64(uint64(reward)));
+        }
+        return reward;
     }
    
 }
