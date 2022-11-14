@@ -48,7 +48,7 @@ async function createFungibleToken(tokenName, tokenSymbol, treasuryAccountId, su
         .setTokenName(tokenName)
         .setTokenSymbol(tokenSymbol)
         .setDecimals(8)
-        .setInitialSupply(0)
+        .setInitialSupply(100*1e8)
         .setTreasuryAccountId(treasuryAccountId)
         .setTokenType(TokenType.FungibleCommon)
         .setSupplyType(TokenSupplyType.Infinite)

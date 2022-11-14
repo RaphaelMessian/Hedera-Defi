@@ -13,8 +13,8 @@ contract SCRewards  {
     using PRBMathUD60x18 for uint256;
 
     IERC20 public stakingToken;
-    IERC20  public rewardsToken;
 
+    uint public totalTokens;
     address[] tokenAddress;
     
     address public owner;
@@ -28,14 +28,6 @@ contract SCRewards  {
         uint amount;
         bool exist;
     }
-
-    uint public totalTokens;
-    uint[] public totalRewards;
-
-    UserInfo userInfo;
-
-    uint public reward;
-    uint perShareRewards;
 
     mapping(address =>  UserInfo) public userContribution;
     mapping (address => RewardsInfo) public rewardsAddress;
@@ -64,34 +56,41 @@ contract SCRewards  {
 
     function addReward(address _token, uint _amount) external onlyOwner {
         require(_amount != 0, "please provide amount");
+        uint perShareRewards;
         perShareRewards = _amount.div(totalTokens);
         if(!rewardsAddress[_token].exist) {
             tokenAddress.push(_token);
             rewardsAddress[_token].exist = true;
             rewardsAddress[_token].amount = perShareRewards;
             SafeHTS.safeAssociateToken(_token, address(this));
-            SafeHTS.safeTransferToken(address(rewardsToken), address(owner), address(this), int64(uint64(_amount)));
+            SafeHTS.safeTransferToken(address(_token), address(owner), address(this), int64(uint64(_amount)));
         } else {
             rewardsAddress[_token].amount += perShareRewards;
-            SafeHTS.safeTransferToken(address(rewardsToken), address(owner), address(this), int64(uint64(_amount)));
+            SafeHTS.safeTransferToken(address(_token), address(owner), address(this), int64(uint64(_amount)));
         }     
     }
     
     function claimSpecificReward(address _token) public returns (uint){
+        uint reward;
         if(userContribution[msg.sender].lastClaimedAmountT[_token] != 0){
-            reward = (rewardsAddress[_token].amount - userContribution[msg.sender].lastClaimedAmountT[_token]) * userContribution[msg.sender].num_shares;
+            reward = (rewardsAddress[_token].amount - userContribution[msg.sender].lastClaimedAmountT[_token]).mul(userContribution[msg.sender].num_shares);
         } else {
-            reward = rewardsAddress[_token].amount * userContribution[msg.sender].num_shares;
+            SafeHTS.safeAssociateToken(_token, address(msg.sender));
+            reward = rewardsAddress[_token].amount.mul(userContribution[msg.sender].num_shares);
         }
         userContribution[msg.sender].lastClaimedAmountT[_token] = rewardsAddress[_token].amount;
-        SafeHTS.safeTransferToken(address(rewardsToken), address(this), address(msg.sender), int64(uint64(reward)));
+        SafeHTS.safeTransferToken(address(_token), address(this), address(msg.sender), int64(uint64(reward)));
         return reward;
     }
 
-    function claimSeveralReward() public returns (uint){
+    function claimAllReward() public returns (uint){
+        uint reward;
         for(uint i; i < tokenAddress.length; i++){
             address token = tokenAddress[i];
-            reward += (rewardsAddress[token].amount - userContribution[msg.sender].lastClaimedAmountT[token]) * userContribution[msg.sender].num_shares;
+            if(userContribution[msg.sender].lastClaimedAmountT[token] == 0) {
+                SafeHTS.safeAssociateToken(token, address(msg.sender));
+            }
+            reward = (rewardsAddress[token].amount - userContribution[msg.sender].lastClaimedAmountT[token]).mul(userContribution[msg.sender].num_shares);
             userContribution[msg.sender].lastClaimedAmountT[token] = rewardsAddress[token].amount;
             SafeHTS.safeTransferToken(address(token), address(this), address(msg.sender), int64(uint64(reward)));
         }
