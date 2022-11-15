@@ -19,9 +19,14 @@ async function main() {
   const rawdataSCRewardsContractJSon = JSON.parse(rawdataSCRewards);
   const SCRewardsContractByteCode = rawdataSCRewardsContractJSon.bytecode;
   const createSCRewardsContract = await deployContract(client, SCRewardsContractByteCode, 150000, operatorPrKey);
-  
+
   console.log(`- Contract created ${createSCRewardsContract.toString()} ,Contract Address ${createSCRewardsContract.toSolidityAddress()} -`);
+  return createSCRewardsContract;
 }
+
+module.exports = {
+    main
+};
 
 // We recommend this pattern to be able to use async/await everywhere
 // and properly handle errors.

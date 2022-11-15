@@ -124,6 +124,8 @@ async function main() {
     const rewardRecord = await getRewardTx.getRecord(client);
     console.log(`- Reward Claimed ${rewardRecord.contractFunctionResult.getInt256(0)}.`);
     console.log(`- Get reward transaction status ${getRewardRx.status.toString()}.`);
+    const totalReward = rewardRecord.contractFunctionResult.getInt256(0);
+    return totalReward
  }
 
  async function claimAllReward(scRewardsContract, client) {
@@ -138,6 +140,8 @@ async function main() {
     const rewardRecord = await getRewardTx.getRecord(client);
     console.log(`- Reward Claimed ${rewardRecord.contractFunctionResult.getInt256(0)}.`);
     console.log(`- Get reward transaction status ${getRewardRx.status.toString()}.`);
+    const totalReward = rewardRecord.contractFunctionResult.getInt256(0);
+    return totalReward
  }
 
  main()
@@ -146,3 +150,11 @@ async function main() {
     console.error(error);
     process.exit(1);
   });
+
+module.exports = {
+    initialize,
+    addStakeAccount,
+    addReward,
+    claimSpecificReward,
+    claimAllReward
+}

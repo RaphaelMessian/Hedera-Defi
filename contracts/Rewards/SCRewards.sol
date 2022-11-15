@@ -22,6 +22,8 @@ contract SCRewards  {
     struct UserInfo {
         uint num_shares;
         mapping(address => uint) lastClaimedAmountT;
+        // uint lockTime;
+        bool exist;
     }
 
     struct RewardsInfo {
@@ -49,9 +51,16 @@ contract SCRewards  {
 
     function addStakeAccount(uint _amount) external {
         require(_amount != 0, "please provide amount");
-        SafeHTS.safeTransferToken(address(stakingToken), msg.sender, address(this), int64(uint64(_amount)));
-        userContribution[msg.sender].num_shares = _amount;
-        totalTokens += _amount;
+        if(!userContribution[msg.sender].exist) {
+            SafeHTS.safeTransferToken(address(stakingToken), msg.sender, address(this), int64(uint64(_amount)));
+            userContribution[msg.sender].num_shares = _amount;
+            userContribution[msg.sender].exist = true;
+            // userContribution[msg.sender].lockTime = block.number;
+            totalTokens += _amount;
+        } else {
+            SafeHTS.safeTransferToken(address(stakingToken), msg.sender, address(this), int64(uint64(_amount)));
+            userContribution[msg.sender].num_shares += _amount;
+        }
     }
 
     function addReward(address _token, uint _amount) external onlyOwner {

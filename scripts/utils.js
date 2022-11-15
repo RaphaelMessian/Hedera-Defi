@@ -94,7 +94,7 @@ async function TokenBalance(accountId, client) {
 async function TokenTransfer(tokenId, sender, receiver, amount, client) {
 
     const transferToken = await new TransferTransaction()
-        .addTokenTransfer(tokenId, sender, -(amount*1e8))// Transfer 10 USDB
+        .addTokenTransfer(tokenId, sender, -(amount*1e8))
         .addTokenTransfer(tokenId, receiver, amount*1e8)
         .freezeWith(client)
     
