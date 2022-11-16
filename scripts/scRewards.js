@@ -1,7 +1,6 @@
 console.clear();
 const  {getClient, createAccount, deployContract, createFungibleToken, mintToken, TokenBalance, TokenTransfer} = require("./utils");
 const {Client, AccountId, PrivateKey, ContractFunctionParameters, ContractExecuteTransaction, TokenAssociateTransaction, ContractId} = require("@hashgraph/sdk");
-const fs = require('fs');
 require('dotenv').config({path: __dirname + '../.env'});
 
 let client = getClient();
@@ -9,7 +8,7 @@ let client = getClient();
 const operatorPrKey = PrivateKey.fromString(process.env.OPERATOR_KEY);
 const operatorPuKey = operatorPrKey.publicKey;
 const operatorAccountId = AccountId.fromString(process.env.OPERATOR_ID);
-const scRewardsContract = ContractId.fromString('0.0.48887654');
+const scRewardsContract = ContractId.fromString('0.0.48896905');
 
 async function main() {
     const aliceKey = PrivateKey.generateED25519();
@@ -47,14 +46,14 @@ async function main() {
     await initialize(scRewardsContract, createStackingToken);
     client.setOperator(aliceAccountId, aliceKey);
     await addStakeAccount(scRewardsContract, 50);
-    client.setOperator(BobAccountId, BobKey);
-    await addStakeAccount(scRewardsContract, 23);
-    client.setOperator(operatorAccountId, operatorPrKey);
-    await addReward(scRewardsContract, createRewardToken1, 90);
-    await addReward(scRewardsContract, createRewardToken2, 50);
-    client.setOperator(BobAccountId, BobKey);
-    await claimAllReward(scRewardsContract, client);
-    await claimAllReward(scRewardsContract, client);
+    // client.setOperator(BobAccountId, BobKey);
+    // await addStakeAccount(scRewardsContract, 23);
+    // client.setOperator(operatorAccountId, operatorPrKey);
+    // await addReward(scRewardsContract, createRewardToken1, 90);
+    // await addReward(scRewardsContract, createRewardToken2, 50);
+    // client.setOperator(BobAccountId, BobKey);
+    // await claimAllReward(scRewardsContract, client);
+    // await claimAllReward(scRewardsContract, client);
     // client.setOperator(aliceAccountId, aliceKey);
     // await claimSpecificReward(scRewardsContract, createRewardToken1, client);
     // client.setOperator(BobAccountId, BobKey);
@@ -144,17 +143,17 @@ async function main() {
     return totalReward
  }
 
- main()
-  .then(() => process.exit(0))
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
-
-module.exports = {
+ module.exports = {
     initialize,
     addStakeAccount,
     addReward,
     claimSpecificReward,
     claimAllReward
 }
+
+ main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });

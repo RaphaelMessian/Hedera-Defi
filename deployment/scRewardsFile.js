@@ -1,10 +1,10 @@
 console.clear();
-const  {deployContract,} = require("../scripts/utils");
+const  {storeContractFile} = require("../scripts/utils");
 const {Client, AccountId, PrivateKey, ContractFunctionParameters} = require("@hashgraph/sdk");
 const fs = require('fs');
 require('dotenv').config({path: __dirname + '/'});
 
-async function scRewardsDeploy() {
+async function scRewardsFile() {
 
   let client = Client.forTestnet();
   const operatorPrKey = PrivateKey.fromString(process.env.OPERATOR_KEY);
@@ -18,14 +18,15 @@ async function scRewardsDeploy() {
   const rawdataSCRewards = fs.readFileSync("../artifacts/contracts/Rewards/SCRewards.sol/SCRewards.json");
   const rawdataSCRewardsContractJSon = JSON.parse(rawdataSCRewards);
   const SCRewardsContractByteCode = rawdataSCRewardsContractJSon.bytecode;
-  const createSCRewardsContract = await deployContract(client, SCRewardsContractByteCode, 150000, operatorPrKey);
-
-  console.log(`- Contract created ${createSCRewardsContract.toString()} ,Contract Address ${createSCRewardsContract.toSolidityAddress()} -`);
-  return createSCRewardsContract;
+  console.log("SCRewardsContractByteCode", SCRewardsContractByteCode)
+  const createSCRewardsFile = await storeContractFile(client, SCRewardsContractByteCode, operatorPrKey)
+  console.log(`- File created ${createSCRewardsFile.toString()} -`);
+  
+  return createSCRewardsFile;
 }
 
 module.exports = {
-  scRewardsDeploy
+    scRewardsFile
 };
 
 // We recommend this pattern to be able to use async/await everywhere

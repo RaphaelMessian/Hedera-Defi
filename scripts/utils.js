@@ -1,7 +1,8 @@
 require('dotenv').config({ path: '../.env' });
 
 const { Client, AccountId, PrivateKey, AccountCreateTransaction, TokenCreateTransaction, ContractCreateFlow,
-     TokenType, TokenSupplyType,TokenInfoQuery, AccountBalanceQuery, TokenMintTransaction, TransferTransaction} = require("@hashgraph/sdk");
+     TokenType, TokenSupplyType,TokenInfoQuery, AccountBalanceQuery, TokenMintTransaction, TransferTransaction,
+     FileCreateTransaction, FileAppendTransaction, ContractCreateTransaction} = require("@hashgraph/sdk");
 
 function getClient() {
     // const client = Client.forName(process.env.HEDERA_NETWORK);
@@ -40,6 +41,41 @@ async function deployContract(client, bytecode, gas, contractAdminKey, construct
 
     return contractId;
 
+}
+
+async function storeContractFile(client, bytecode, treasuryKey) {
+    const fileCreateTx = new FileCreateTransaction()
+      .setKeys([treasuryKey])
+      .freezeWith(client);
+    const fileCreateSign = await fileCreateTx.sign(treasuryKey);
+    const fileSubmit = await fileCreateSign.execute(client);
+    const fileCreateRx = await fileSubmit.getReceipt(client);
+    const bytecodeFileId = fileCreateRx.fileId;
+    console.log(`- The smart contract bytecode file ID is: ${bytecodeFileId}`);
+
+    const fileAppendTx = new FileAppendTransaction()
+        .setFileId(bytecodeFileId)
+        .setContents(bytecode)
+        .setMaxChunks(10)
+        .freezeWith(client);
+    const fileAppendSign = await fileAppendTx.sign(treasuryKey);
+    const fileAppendSubmit = await fileAppendSign.execute(client);
+    const fileAppendRx = await fileAppendSubmit.getReceipt(client);
+    console.log(`- Content added: ${fileAppendRx.status} \n`);
+
+    return bytecodeFileId;
+}
+
+async function createSmartContract(client, bytecodeFileId, gas) {
+    const contractTx = new ContractCreateTransaction()
+      .setBytecodeFileId(bytecodeFileId)
+      .setGas(gas)
+
+    const contractResponse = await contractTx.execute(client);
+    const contractReceipt = await contractResponse.getReceipt(client);
+    const newContractId = contractReceipt.contractId;
+    console.log(`- The contract ID is: ${newContractId}`);
+    return newContractId;
 }
 
 async function createFungibleToken(tokenName, tokenSymbol, treasuryAccountId, supplyPublicKey, client, privateKey) {
@@ -112,5 +148,7 @@ module.exports = {
     tokenQuery,
     TokenBalance,
     getClient,
-    TokenTransfer
+    TokenTransfer,
+    storeContractFile,
+    createSmartContract
 }

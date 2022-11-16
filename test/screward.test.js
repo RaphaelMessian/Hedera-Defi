@@ -1,4 +1,4 @@
-const { expect, util } = require("chai");
+const { expect } = require("chai");
 
 const { 
     initialize,
@@ -11,29 +11,25 @@ const {
 const {
     createAccount,
     createFungibleToken,
-    tokenQuery,
-    TokenBalance,
     getClient,
-    TokenTransfer
+    createSmartContract
 } = require('../scripts/utils.js');
 
-const {
-    main
-} = require('../deployment/scRewardsDeploy.js')
 
 const { 
-    Client, 
+    Client,
     AccountId, 
-    PrivateKey
+    PrivateKey,
+    FileId
 } = require("@hashgraph/sdk");
 
-describe('All Tests', async function () {
-    const client = getClient()
-    console.log("client", client);
+const fileId = FileId.fromString("0.0.48899909");
+const operatorPrKey = PrivateKey.fromString(process.env.OPERATOR_KEY);
+const operatorPuKey = operatorPrKey.publicKey;
+const operatorAccountId = AccountId.fromString(process.env.OPERATOR_ID);
+let client = getClient();
 
-    const operatorPrKey = PrivateKey.fromString(process.env.OPERATOR_KEY);
-    const operatorPuKey = operatorPrKey.publicKey;
-    const operatorAccountId = AccountId.fromString(process.env.OPERATOR_ID);
+describe('All Tests', async function () {
     const aliceKey = PrivateKey.generateED25519();
     const aliceAccountId = await createAccount(client, aliceKey, 50);
     const BobKey = PrivateKey.generateED25519();
@@ -41,10 +37,10 @@ describe('All Tests', async function () {
     const createStackingToken = await createFungibleToken("Stacking Token", "ST", aliceAccountId, aliceKey.publicKey, client, aliceKey);
     const createRewardToken1 = await createFungibleToken("Reward Token 1", "RT1", operatorAccountId, operatorPuKey, client, operatorPrKey);
     const createRewardToken2 = await createFungibleToken("Reward Token 2", "RT2", operatorAccountId, operatorPuKey, client, operatorPrKey);
-
-    describe('rewards and claim', async function () {
+    
+    context('rewards and claim', async function () {
         afterEach(async () => {
-            const contractId = await main();
+            const contractId = await createSmartContract(client, fileId, 150000);
             await initialize(contractId, createStackingToken);
         });
         it('no tokens, all claim', async function () {
