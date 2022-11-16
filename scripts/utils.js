@@ -98,6 +98,7 @@ async function createFungibleToken(tokenName, tokenSymbol, treasuryAccountId, su
     // Sign the transaction with the token adminKey and the token treasury account private key
     const tokenCreateRx = await tokenCreateExec.getReceipt(client);
     const tokenId = tokenCreateRx.tokenId
+    console.log('tokenId', tokenId.toString());
 
     return tokenId;
 }    

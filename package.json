@@ -4,12 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "mocha -r dotenv/config"
+    "test": "mocha -r dotenv/config --timeout 50000"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^2.0.0",
+    "chai-bn": "^0.3.1",
     "hardhat": "^2.12.0"
   },
   "dependencies": {

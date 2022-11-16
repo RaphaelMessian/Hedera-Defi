@@ -8,14 +8,14 @@ let client = getClient();
 const operatorPrKey = PrivateKey.fromString(process.env.OPERATOR_KEY);
 const operatorPuKey = operatorPrKey.publicKey;
 const operatorAccountId = AccountId.fromString(process.env.OPERATOR_ID);
-const scRewardsContract = ContractId.fromString('0.0.48896905');
+const scRewardsContract = ContractId.fromString('0.0.48904599');
 
 async function main() {
     const aliceKey = PrivateKey.generateED25519();
-    const aliceAccountId = await createAccount(client, aliceKey, 50);
+    const aliceAccountId = await createAccount(client, aliceKey, 10);
     console.log(`- Alice account id created: ${aliceAccountId.toString()}`);
     const BobKey = PrivateKey.generateED25519();
-    const BobAccountId = await createAccount(client, BobKey, 50);
+    const BobAccountId = await createAccount(client, BobKey, 10);
     console.log(`- Bob account id created: ${BobAccountId.toString()}`);
 
     const createStackingToken = await createFungibleToken("Stacking Token", "ST", aliceAccountId, aliceKey.publicKey, client, aliceKey);
@@ -36,7 +36,7 @@ async function main() {
     console.log(`- tokenAssociateReceipt ${tokenAssociateReceipt.status.toString()}`);
 
     const aliceClient = client.setOperator(aliceAccountId, aliceKey);
-    const stackingTokenTransfert = await TokenTransfer(createStackingToken, aliceAccountId, BobAccountId, 23, aliceClient);
+    const stackingTokenTransfert = await TokenTransfer(createStackingToken, aliceAccountId, BobAccountId, 50, aliceClient);
     console.log(`- Token Transfert to Bob : ${stackingTokenTransfert.status.toString()}`)
 
     // const mintRewardToken = await mintToken(createRewardToken1, client, 10, operatorPrKey);
@@ -47,12 +47,12 @@ async function main() {
     client.setOperator(aliceAccountId, aliceKey);
     await addStakeAccount(scRewardsContract, 50);
     // client.setOperator(BobAccountId, BobKey);
-    // await addStakeAccount(scRewardsContract, 23);
-    // client.setOperator(operatorAccountId, operatorPrKey);
-    // await addReward(scRewardsContract, createRewardToken1, 90);
-    // await addReward(scRewardsContract, createRewardToken2, 50);
-    // client.setOperator(BobAccountId, BobKey);
-    // await claimAllReward(scRewardsContract, client);
+    // await addStakeAccount(scRewardsContract, 50);
+    client.setOperator(operatorAccountId, operatorPrKey);
+    await addReward(scRewardsContract, createRewardToken1, 100);
+    // await addReward(scRewardsContract, createRewardToken2, 100);
+    client.setOperator(BobAccountId, BobKey);
+    await claimAllReward(scRewardsContract, client);
     // await claimAllReward(scRewardsContract, client);
     // client.setOperator(aliceAccountId, aliceKey);
     // await claimSpecificReward(scRewardsContract, createRewardToken1, client);
@@ -94,7 +94,7 @@ async function main() {
     console.log(`- Add Stake Account to the contract transaction status ${addRewardReceipt.status.toString()}.`);
  }
 
- async function addReward(scRewardsContract, rewardToken, amount,) {
+ async function addReward(scRewardsContract, rewardToken, amount) {
     let contractFunctionParameters = new ContractFunctionParameters()
         .addAddress(rewardToken.toSolidityAddress())
         .addUint256(amount*1e8);
@@ -140,7 +140,7 @@ async function main() {
     console.log(`- Reward Claimed ${rewardRecord.contractFunctionResult.getInt256(0)}.`);
     console.log(`- Get reward transaction status ${getRewardRx.status.toString()}.`);
     const totalReward = rewardRecord.contractFunctionResult.getInt256(0);
-    return totalReward
+    return totalReward.toString();
  }
 
  module.exports = {
@@ -151,9 +151,9 @@ async function main() {
     claimAllReward
 }
 
- main()
-  .then(() => process.exit(0))
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
+//  main()
+//   .then(() => process.exit(0))
+//   .catch((error) => {
+//     console.error(error);
+//     process.exit(1);
+//   });

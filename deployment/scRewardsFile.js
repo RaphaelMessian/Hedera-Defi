@@ -18,7 +18,6 @@ async function scRewardsFile() {
   const rawdataSCRewards = fs.readFileSync("../artifacts/contracts/Rewards/SCRewards.sol/SCRewards.json");
   const rawdataSCRewardsContractJSon = JSON.parse(rawdataSCRewards);
   const SCRewardsContractByteCode = rawdataSCRewardsContractJSon.bytecode;
-  console.log("SCRewardsContractByteCode", SCRewardsContractByteCode)
   const createSCRewardsFile = await storeContractFile(client, SCRewardsContractByteCode, operatorPrKey)
   console.log(`- File created ${createSCRewardsFile.toString()} -`);
   
@@ -31,7 +30,7 @@ module.exports = {
 
 // We recommend this pattern to be able to use async/await everywhere
 // and properly handle errors.
-main().catch((error) => {
+scRewardsFile().catch((error) => {
   console.error(error);
   process.exitCode = 1;
 });
