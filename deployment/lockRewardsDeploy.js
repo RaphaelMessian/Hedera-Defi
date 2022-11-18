@@ -15,7 +15,7 @@ async function main() {
     operatorPrKey
   );
 
-  const rawdataLockRewards = fs.readFileSync("../artifacts/contracts/Rewards/LockRewards.sol/LockRewards.json");
+  const rawdataLockRewards = fs.readFileSync(`${__dirname}/../artifacts/contracts/Rewards/LockRewards.sol/LockRewards.json`);
   const rawdataLockRewardsContractJSon = JSON.parse(rawdataLockRewards);
   const lockRewardsContractByteCode = rawdataLockRewardsContractJSon.bytecode;
   const constructorParameters = new ContractFunctionParameters()
@@ -26,8 +26,6 @@ async function main() {
   console.log(`- Contract created ${createLockRewardsContract.toString()} ,Contract Address ${createLockRewardsContract.toSolidityAddress()} -`);
 }
 
-// We recommend this pattern to be able to use async/await everywhere
-// and properly handle errors.
 main().catch((error) => {
   console.error(error);
   process.exitCode = 1;

@@ -22,7 +22,7 @@ contract SCRewards  {
     struct UserInfo {
         uint num_shares;
         mapping(address => uint) lastClaimedAmountT;
-        // uint lockTime;
+        uint lockTimeStart;
         bool exist;
     }
 
@@ -55,11 +55,12 @@ contract SCRewards  {
             SafeHTS.safeTransferToken(address(stakingToken), msg.sender, address(this), int64(uint64(_amount)));
             userContribution[msg.sender].num_shares = _amount;
             userContribution[msg.sender].exist = true;
-            // userContribution[msg.sender].lockTime = block.number;
+            userContribution[msg.sender].lockTimeStart = block.number;
             totalTokens += _amount;
         } else {
             SafeHTS.safeTransferToken(address(stakingToken), msg.sender, address(this), int64(uint64(_amount)));
             userContribution[msg.sender].num_shares += _amount;
+            totalTokens += _amount;
         }
     }
 
@@ -92,6 +93,22 @@ contract SCRewards  {
         return reward;
     }
 
+    function claimSpecificsReward(address[] memory _token) public returns (uint){
+        uint reward;
+        for(uint i; i < _token.length; i++){
+            address token = tokenAddress[i];
+            if(userContribution[msg.sender].lastClaimedAmountT[token] != 0){
+                reward = (rewardsAddress[token].amount - userContribution[msg.sender].lastClaimedAmountT[token]).mul(userContribution[msg.sender].num_shares);
+            } else {
+                SafeHTS.safeAssociateToken(token, address(msg.sender));
+                reward = rewardsAddress[token].amount.mul(userContribution[msg.sender].num_shares);
+            }
+            userContribution[msg.sender].lastClaimedAmountT[token] = rewardsAddress[token].amount;
+            SafeHTS.safeTransferToken(address(token), address(this), address(msg.sender), int64(uint64(reward)));
+        }
+        return reward;
+    }
+
     function claimAllReward() public returns (uint){
         uint reward;
         for(uint i; i < tokenAddress.length; i++){
@@ -105,7 +122,6 @@ contract SCRewards  {
         }
         return reward;
     }
-   
 }
 
 

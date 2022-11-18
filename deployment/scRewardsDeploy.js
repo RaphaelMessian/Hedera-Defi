@@ -15,7 +15,7 @@ async function scRewardsDeploy() {
     operatorPrKey
   );
 
-  const rawdataSCRewards = fs.readFileSync("../artifacts/contracts/Rewards/SCRewards.sol/SCRewards.json");
+  const rawdataSCRewards = fs.readFileSync(`${__dirname}/../artifacts/contracts/Rewards/SCRewards.sol/SCRewards.json`);
   const rawdataSCRewardsContractJSon = JSON.parse(rawdataSCRewards);
   const SCRewardsContractByteCode = rawdataSCRewardsContractJSon.bytecode;
   const createSCRewardsContract = await deployContract(client, SCRewardsContractByteCode, 150000, operatorPrKey);
@@ -28,8 +28,6 @@ module.exports = {
   scRewardsDeploy
 };
 
-// We recommend this pattern to be able to use async/await everywhere
-// and properly handle errors.
 scRewardsDeploy().catch((error) => {
   console.error(error);
   process.exitCode = 1;

@@ -21,7 +21,6 @@ async function main() {
         .setContractId(createLockRewardsContract)
         .setFunction("initialize")
         .setGas(1500000)
-        // .setPayableAmount(new Hbar(100))
         .execute(client);
     
     const initializeReceipt = await initializeTx.getReceipt(client);
