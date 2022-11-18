@@ -15,19 +15,17 @@ async function main() {
     operatorPrKey
   );
 
-  const rawdataStackingReward = fs.readFileSync("../artifacts/contracts/StackingRewards/StakingRewards.sol/StakingRewards.json");
-  const rawdataStackingRewardContractJSon = JSON.parse(rawdataStackingReward);
-  const StackingRewardContractByteCode = rawdataStackingRewardContractJSon.bytecode;
+  const rawdataLockRewards = fs.readFileSync(`${__dirname}/../artifacts/contracts/Rewards/LockRewards.sol/LockRewards.json`);
+  const rawdataLockRewardsContractJSon = JSON.parse(rawdataLockRewards);
+  const lockRewardsContractByteCode = rawdataLockRewardsContractJSon.bytecode;
   const constructorParameters = new ContractFunctionParameters()
       .addAddress(createStackingToken.toSolidityAddress())
       .addAddress(createRewardToken.toSolidityAddress());
-  const createStackingRewardContract = await deployContract(client, StackingRewardContractByteCode, 150000, operatorPrKey, constructorParameters);
+  const createLockRewardsContract = await deployContract(client, lockRewardsContractByteCode, 150000, operatorPrKey, constructorParameters);
   
-  console.log(`- Contract created ${createStackingRewardContract.toString()} ,Contract Address ${createStackingRewardContract.toSolidityAddress()} -`);
+  console.log(`- Contract created ${createLockRewardsContract.toString()} ,Contract Address ${createLockRewardsContract.toSolidityAddress()} -`);
 }
 
-// We recommend this pattern to be able to use async/await everywhere
-// and properly handle errors.
 main().catch((error) => {
   console.error(error);
   process.exitCode = 1;
