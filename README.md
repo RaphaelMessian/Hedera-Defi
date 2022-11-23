@@ -16,11 +16,15 @@ npm i
 npx hardhat compile # to compile Smart Contract
 ```
 
-## Run
+## Test
 
 ```shell
 cd scripts
 node xxxxxx.js 
 ```
 
+## Test
 
+```shell
+npm test 
+```
