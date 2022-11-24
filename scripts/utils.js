@@ -140,6 +140,14 @@ async function TokenTransfer(tokenId, sender, receiver, amount, client) {
     return transferTokenRx;
 }
 
+async function tokenBalance(accountId, client) {
+    const query = new AccountBalanceQuery()
+                .setAccountId(accountId);
+    const tokenBalance = await query.execute(client);
+
+    return tokenBalance
+}
+
 module.exports = {
     createAccount,
     deployContract,
@@ -150,5 +158,6 @@ module.exports = {
     getClient,
     TokenTransfer,
     storeContractFile,
-    createSmartContract
+    createSmartContract,
+    tokenBalance
 }

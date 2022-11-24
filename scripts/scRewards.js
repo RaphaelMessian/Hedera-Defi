@@ -78,52 +78,50 @@ async function main() {
     console.log(`- initialize transaction ${initializeReceipt.status.toString()}.`);
  }
 
- async function addStakeAccount(scRewardsContract, amount, client) {
+//  async function addStakeAccount(scRewardsContract, amount, client) {
+//     let contractFunctionParameters = new ContractFunctionParameters()
+//             .addUint256(amount*1e8);
+
+//     const setDurationTx = await new ContractExecuteTransaction()
+//         .setContractId(scRewardsContract)
+//         .setFunction("addStakeAccount", contractFunctionParameters)
+//         .setGas(1500000);
+
+//     const addRewardExec = await setDurationTx.execute(client);    
+//     const addRewardReceipt = await addRewardExec.getReceipt(client);
+//     console.log(`- Add Stake Account to the contract transaction status ${addRewardReceipt.status.toString()}.`);
+//  }
+
+//  async function addReward(scRewardsContract, rewardToken, amount) {
+//     let contractFunctionParameters = new ContractFunctionParameters()
+//         .addAddress(rewardToken.toSolidityAddress())
+//         .addUint256(amount*1e8);
+
+//     const notifyRewardTx = await new ContractExecuteTransaction()
+//         .setContractId(scRewardsContract)
+//         .setFunction("addReward", contractFunctionParameters)
+//         .setGas(1500000)
+//         .execute(client);
+        
+//     const notifyRewardRx = await notifyRewardTx.getReceipt(client);
+//     console.log(`- Add Reward to the contract transaction status ${notifyRewardRx.status.toString()}.`);
+//  }
+
+ async function addToken(scRewardsContract, tokenId, amount, client) {
     let contractFunctionParameters = new ContractFunctionParameters()
-            .addUint256(amount*1e8);
-
-    const setDurationTx = await new ContractExecuteTransaction()
-        .setContractId(scRewardsContract)
-        .setFunction("addStakeAccount", contractFunctionParameters)
-        .setGas(1500000);
-
-    const addRewardExec = await setDurationTx.execute(client);    
-    const addRewardReceipt = await addRewardExec.getReceipt(client);
-    console.log(`- Add Stake Account to the contract transaction status ${addRewardReceipt.status.toString()}.`);
- }
-
- async function addReward(scRewardsContract, rewardToken, amount) {
-    let contractFunctionParameters = new ContractFunctionParameters()
-        .addAddress(rewardToken.toSolidityAddress())
+        .addAddress(tokenId.toSolidityAddress())
         .addUint256(amount*1e8);
 
     const notifyRewardTx = await new ContractExecuteTransaction()
         .setContractId(scRewardsContract)
-        .setFunction("addReward", contractFunctionParameters)
+        .setFunction("addToken", contractFunctionParameters)
         .setGas(1500000)
         .execute(client);
         
     const notifyRewardRx = await notifyRewardTx.getReceipt(client);
-    console.log(`- Add Reward to the contract transaction status ${notifyRewardRx.status.toString()}.`);
+    console.log(`- Add Token to the contract transaction status ${notifyRewardRx.status.toString()}.`);
  }
 
- async function claimSpecificReward(scRewardsContract, rewardToken, client) {
-    let contractFunctionParameters = new ContractFunctionParameters()
-        .addAddress(rewardToken.toSolidityAddress());
-
-    const getRewardTx = await new ContractExecuteTransaction()
-        .setContractId(scRewardsContract)
-        .setFunction("claimSpecificReward", contractFunctionParameters)
-        .setGas(1500000)
-        .execute(client);
-        
-    const getRewardRx = await getRewardTx.getReceipt(client);
-    const rewardRecord = await getRewardTx.getRecord(client);
-    console.log(`- Reward Claimed ${rewardRecord.contractFunctionResult.getInt256(0)}.`);
-    console.log(`- Get reward transaction status ${getRewardRx.status.toString()}.`);
-    const totalReward = rewardRecord.contractFunctionResult.getInt256(0);
-    return totalReward
- }
 
  async function claimSpecificsReward(scRewardsContract, rewardToken, client) {
     let contractFunctionParameters = new ContractFunctionParameters()
@@ -137,33 +135,54 @@ async function main() {
         
     const getRewardRx = await getRewardTx.getReceipt(client);
     const rewardRecord = await getRewardTx.getRecord(client);
-    console.log(`- Reward Claimed ${rewardRecord.contractFunctionResult.getInt256(0)}.`);
-    console.log(`- Get reward transaction status ${getRewardRx.status.toString()}.`);
     const totalReward = rewardRecord.contractFunctionResult.getInt256(0);
+    console.log(`- Reward Claimed ${totalReward}.`);
+    console.log(`- Get reward transaction status ${getRewardRx.status.toString()}.`);
     return totalReward
  }
 
- async function claimAllReward(scRewardsContract, client) {
+ async function claimAllReward(scRewardsContract, startPosition, client) {
+    let contractFunctionParameters = new ContractFunctionParameters()
+        .addUint256(startPosition)
 
     const getRewardTx = await new ContractExecuteTransaction()
         .setContractId(scRewardsContract)
-        .setFunction("claimAllReward")
+        .setFunction("claimAllReward", contractFunctionParameters)
         .setGas(3500000)
         .execute(client);
         
     const getRewardRx = await getRewardTx.getReceipt(client);
     const rewardRecord = await getRewardTx.getRecord(client);
-    console.log(`- Reward Claimed ${rewardRecord.contractFunctionResult.getInt256(0)}.`);
-    console.log(`- Get reward transaction status ${getRewardRx.status.toString()}.`);
     const totalReward = rewardRecord.contractFunctionResult.getInt256(0);
+    console.log(`- Reward Claimed ${totalReward}.`);
+    console.log(`- Get reward transaction status ${getRewardRx.status.toString()}.`);
+    return totalReward.toString();
+ }
+
+ async function withdraw(scRewardsContract, startPosition, amount, client) {
+    let contractFunctionParameters = new ContractFunctionParameters()
+        .addUint256(startPosition)
+        .addUint256(amount*1e8);
+
+    const getRewardTx = await new ContractExecuteTransaction()
+        .setContractId(scRewardsContract)
+        .setFunction("withdraw", contractFunctionParameters)
+        .setGas(3500000)
+        .execute(client);
+        
+    const getRewardRx = await getRewardTx.getReceipt(client);
+    const rewardRecord = await getRewardTx.getRecord(client);
+    const totalReward = rewardRecord.contractFunctionResult.getInt256(0);
+    console.log(`- withdraw transaction status ${getRewardRx.status.toString()}.`);
     return totalReward.toString();
  }
 
  module.exports = {
     initialize,
-    addStakeAccount,
-    addReward,
-    claimSpecificReward,
+    // addStakeAccount,
+    // addReward,
+    addToken,
+    withdraw,
     claimAllReward,
     claimSpecificsReward
 }

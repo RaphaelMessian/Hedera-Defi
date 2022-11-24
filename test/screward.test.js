@@ -7,11 +7,10 @@ chai.use(require('chai-bn')(BN));
 
 const { 
     initialize,
-    addStakeAccount,
-    addReward,
-    claimSpecificReward,
     claimAllReward,
-    claimSpecificsReward
+    claimSpecificsReward,
+    addToken,
+    withdraw
 } = require('../scripts/scRewards.js');
 
 const {
@@ -19,7 +18,8 @@ const {
     createFungibleToken,
     getClient,
     createSmartContract,
-    TokenTransfer
+    TokenTransfer,
+    tokenBalance
 } = require('../scripts/utils.js');
 
 
@@ -29,7 +29,8 @@ const {
     PrivateKey,
     FileId,
     ContractId,
-    TokenAssociateTransaction
+    TokenAssociateTransaction,
+    AccountBalanceQuery
 } = require("@hashgraph/sdk");
 
 const fileId = FileId.fromString("0.0.48912519");
@@ -69,13 +70,13 @@ describe('All Tests', async function () {
         await TokenTransfer(stakingToken, aliceAccountId, bobAccountId, 50, client);
     }); 
     context('rewards and claim', async function () {
-        beforeEach(async () => {
-            client = getClient();
-            //contractId = await createSmartContract(client, fileId, 150000);
-            contractId = ContractId.fromString('0.0.48922649');
-            await initialize(contractId, stakingToken);
-        });
-        // it('no tokens, all claim', async function () {
+        // beforeEach(async () => {
+        //     client = getClient();
+        //     //contractId = await createSmartContract(client, fileId, 150000);
+        //     contractId = ContractId.fromString('0.0.48955310');
+        //     await initialize(contractId, stakingToken);
+        // });
+                // it('no tokens, all claim', async function () {
         //     const claim = await claimAllReward(contractId, client);
         //     expect(claim).to.be.equals('0');
         // });
@@ -112,21 +113,21 @@ describe('All Tests', async function () {
         //     expect(claimAlice).equals('500000000');
         //     expect(claimBob).equals('500000000');
         // });
-        it('two people, two type of reward, all claim', async function () {
-            client.setOperator(aliceAccountId, aliceKey);
-            await addStakeAccount(contractId, 10, client);
-            client.setOperator(bobAccountId, bobKey);
-            await addStakeAccount(contractId, 10, client);
-            client.setOperator(operatorAccountId, operatorPrKey);
-            await addReward(contractId, createRewardToken1, 10);
-            await addReward(contractId, createRewardToken2, 10);
-            client.setOperator(aliceAccountId, aliceKey);
-            const claimAlice = await claimAllReward(contractId, client);
-            client.setOperator(bobAccountId, bobKey);
-            const claimBob = await claimAllReward(contractId, client);
-            expect(claimAlice).equals('500000000');
-            expect(claimBob).equals('50000000');
-        });
+        // it('two people, two type of reward, all claim', async function () {
+        //     client.setOperator(aliceAccountId, aliceKey);
+        //     await addStakeAccount(contractId, 10, client);
+        //     client.setOperator(bobAccountId, bobKey);
+        //     await addStakeAccount(contractId, 10, client);
+        //     client.setOperator(operatorAccountId, operatorPrKey);
+        //     await addReward(contractId, createRewardToken1, 10);
+        //     await addReward(contractId, createRewardToken2, 10);
+        //     client.setOperator(aliceAccountId, aliceKey);
+        //     const claimAlice = await claimAllReward(contractId, client);
+        //     client.setOperator(bobAccountId, bobKey);
+        //     const claimBob = await claimAllReward(contractId, client);
+        //     expect(claimAlice).equals('500000000');
+        //     expect(claimBob).equals('50000000');
+        // });
         // it('two people, two type of reward, one claim all, other claim specific token', async function () {
         //     client.setOperator(aliceAccountId, aliceKey);
         //     await addStakeAccount(contractId, 10, client);
@@ -334,21 +335,172 @@ describe('All Tests', async function () {
         //     expect(claimBob).equals('50000000');
         // });
     });
+    context('withdraw', async function () {
+        beforeEach(async () => {
+            client = getClient();
+            //contractId = await createSmartContract(client, fileId, 150000);
+            contractId = ContractId.fromString('0.0.48964390');
+            await initialize(contractId, stakingToken);
+        });
+        // it('two people, two type of reward, one withdraw, add reward, all claim', async function () {
+        //     client.setOperator(aliceAccountId, aliceKey);
+        //     await addToken(contractId, stakingToken, 10, client);
+        //     client.setOperator(bobAccountId, bobKey);
+        //     await addToken(contractId,stakingToken, 10, client);
+        //     client.setOperator(operatorAccountId, operatorPrKey);
+        //     await addToken(contractId, createRewardToken1, 10, client);
+        //     await addToken(contractId, createRewardToken2, 10, client);
+        //     client.setOperator(aliceAccountId, aliceKey);
+        //     await withdraw(contractId, 0, 5, client);
+        //     const aliceBalance = await tokenBalance(aliceAccountId, client);
+        //     const balanceAliceReward1 = aliceBalance.tokens.get(createRewardToken1).toString();
+        //     const balanceAliceReward2 = aliceBalance.tokens.get(createRewardToken2).toString();
+        //     client.setOperator(bobAccountId, bobKey);
+        //     await claimAllReward(contractId, 0, client);
+        //     const bobBalance = await tokenBalance(bobAccountId, client);
+        //     const balanceBobReward1 = bobBalance.tokens.get(createRewardToken1).toString();
+        //     const balanceBobReward2 = bobBalance.tokens.get(createRewardToken1).toString();
+        //     client.setOperator(operatorAccountId, operatorPrKey);
+        //     await addToken(contractId, createRewardToken1, 10, client);
+        //     client.setOperator(aliceAccountId, aliceKey);
+        //     await claimAllReward(contractId, 0, client);
+        //     client.setOperator(bobAccountId, bobKey);
+        //     await claimAllReward(contractId, 0, client);
+        //     const aliceBalance2 = await tokenBalance(aliceAccountId, client);
+        //     const bobBalance2 = await tokenBalance(bobAccountId, client);
+        //     const balanceAliceReward3 = aliceBalance2.tokens.get(createRewardToken1).toString();
+        //     const balanceBobReward3 = bobBalance2.tokens.get(createRewardToken1).toString();
+        //     expect(balanceAliceReward1).equals('500000000');
+        //     expect(balanceBobReward1).equals('500000000');
+        //     expect(balanceAliceReward2).equals('500000000');
+        //     expect(balanceBobReward2).equals('500000000');
+        //     expect(balanceAliceReward3).equals('833333333');
+        //     expect(balanceBobReward3).equals('1166666667');
+        // });
+        // it('two people, two type of reward, one withdraw, add two reward, all claim', async function () {
+        //     client.setOperator(aliceAccountId, aliceKey);
+        //     await addToken(contractId, stakingToken, 10, client);
+        //     client.setOperator(bobAccountId, bobKey);
+        //     await addToken(contractId,stakingToken, 10, client);
+        //     client.setOperator(operatorAccountId, operatorPrKey);
+        //     await addToken(contractId, createRewardToken1, 10, client);
+        //     await addToken(contractId, createRewardToken2, 10, client);
+        //     client.setOperator(aliceAccountId, aliceKey);
+        //     await withdraw(contractId, 0, 5, client);
+        //     const aliceBalance = await tokenBalance(aliceAccountId, client);
+        //     const balanceAliceReward1 = aliceBalance.tokens.get(createRewardToken1).toString();
+        //     const balanceAliceReward2 = aliceBalance.tokens.get(createRewardToken2).toString();
+        //     client.setOperator(bobAccountId, bobKey);
+        //     await claimAllReward(contractId, 0, client);
+        //     const bobBalance = await tokenBalance(bobAccountId, client);
+        //     const balanceBobReward1 = bobBalance.tokens.get(createRewardToken1).toString();
+        //     const balanceBobReward2 = bobBalance.tokens.get(createRewardToken2).toString();
+        //     client.setOperator(operatorAccountId, operatorPrKey);
+        //     await addToken(contractId, createRewardToken1, 10, client);
+        //     await addToken(contractId, createRewardToken2, 10, client);
+        //     client.setOperator(aliceAccountId, aliceKey);
+        //     await claimAllReward(contractId, 0, client);
+        //     client.setOperator(bobAccountId, bobKey);
+        //     await claimAllReward(contractId, 0, client);
+        //     const aliceBalance2 = await tokenBalance(aliceAccountId, client);
+        //     const bobBalance2 = await tokenBalance(bobAccountId, client);
+        //     const balanceAliceReward3 = aliceBalance2.tokens.get(createRewardToken1).toString();
+        //     const balanceAliceReward4 = aliceBalance2.tokens.get(createRewardToken2).toString();
+        //     const balanceBobReward3 = bobBalance2.tokens.get(createRewardToken1).toString();
+        //     const balanceBobReward4 = bobBalance2.tokens.get(createRewardToken2).toString();
+        //     expect(balanceAliceReward1).equals('500000000');
+        //     expect(balanceBobReward1).equals('500000000');
+        //     expect(balanceAliceReward2).equals('500000000');
+        //     expect(balanceBobReward2).equals('500000000');
+        //     expect(balanceAliceReward3).equals('833333333');
+        //     expect(balanceBobReward3).equals('1166666667');
+        //     expect(balanceAliceReward4).equals('833333333');
+        //     expect(balanceBobReward4).equals('1166666667');
+        // });
+        // it('two people, two type of reward, two withdraw, add two reward, all claim', async function () {
+        //     client.setOperator(aliceAccountId, aliceKey);
+        //     await addToken(contractId, stakingToken, 10, client);
+        //     client.setOperator(bobAccountId, bobKey);
+        //     await addToken(contractId,stakingToken, 10, client);
+        //     client.setOperator(operatorAccountId, operatorPrKey);
+        //     await addToken(contractId, createRewardToken1, 10, client);
+        //     await addToken(contractId, createRewardToken2, 10, client);
+        //     client.setOperator(aliceAccountId, aliceKey);
+        //     await withdraw(contractId, 0, 5, client);
+        //     const aliceBalance = await tokenBalance(aliceAccountId, client);
+        //     const balanceAliceReward1 = aliceBalance.tokens.get(createRewardToken1).toString();
+        //     const balanceAliceReward2 = aliceBalance.tokens.get(createRewardToken2).toString();
+        //     client.setOperator(bobAccountId, bobKey);
+        //     await withdraw(contractId, 0, 5, client);
+        //     const bobBalance = await tokenBalance(bobAccountId, client);
+        //     const balanceBobReward1 = bobBalance.tokens.get(createRewardToken1).toString();
+        //     const balanceBobReward2 = bobBalance.tokens.get(createRewardToken2).toString();
+        //     client.setOperator(operatorAccountId, operatorPrKey);
+        //     await addToken(contractId, createRewardToken1, 10, client);
+        //     await addToken(contractId, createRewardToken2, 10, client);
+        //     client.setOperator(aliceAccountId, aliceKey);
+        //     await claimAllReward(contractId, 0, client);
+        //     client.setOperator(bobAccountId, bobKey);
+        //     await claimAllReward(contractId, 0, client);
+        //     const aliceBalance2 = await tokenBalance(aliceAccountId, client);
+        //     const bobBalance2 = await tokenBalance(bobAccountId, client);
+        //     const balanceAliceReward3 = aliceBalance2.tokens.get(createRewardToken1).toString();
+        //     const balanceAliceReward4 = aliceBalance2.tokens.get(createRewardToken2).toString();
+        //     const balanceBobReward3 = bobBalance2.tokens.get(createRewardToken1).toString();
+        //     const balanceBobReward4 = bobBalance2.tokens.get(createRewardToken2).toString();
+        //     expect(balanceAliceReward1).equals('500000000');
+        //     expect(balanceBobReward1).equals('500000000');
+        //     expect(balanceAliceReward2).equals('500000000');
+        //     expect(balanceBobReward2).equals('500000000');
+        //     expect(balanceAliceReward3).equals('500000000');
+        //     expect(balanceBobReward3).equals('500000000');
+        //     expect(balanceAliceReward4).equals('1000000000');
+        //     expect(balanceBobReward4).equals('1000000000');
+        // });
+        it('two people, two type of reward, two withdraw, add two reward, both add stake, all claim', async function () {
+            client.setOperator(aliceAccountId, aliceKey);
+            await addToken(contractId, stakingToken, 10, client);
+            client.setOperator(bobAccountId, bobKey);
+            await addToken(contractId,stakingToken, 10, client);
+            client.setOperator(operatorAccountId, operatorPrKey);
+            await addToken(contractId, createRewardToken1, 10, client);
+            await addToken(contractId, createRewardToken2, 10, client);
+            client.setOperator(aliceAccountId, aliceKey);
+            await withdraw(contractId, 0, 5, client);
+            const aliceBalance = await tokenBalance(aliceAccountId, client);
+            const balanceAliceReward1 = aliceBalance.tokens.get(createRewardToken1).toString();
+            const balanceAliceReward2 = aliceBalance.tokens.get(createRewardToken2).toString();
+            client.setOperator(bobAccountId, bobKey);
+            await withdraw(contractId, 0, 5, client);
+            const bobBalance = await tokenBalance(bobAccountId, client);
+            const balanceBobReward1 = bobBalance.tokens.get(createRewardToken1).toString();
+            const balanceBobReward2 = bobBalance.tokens.get(createRewardToken2).toString();
+            client.setOperator(aliceAccountId, aliceKey);
+            await addToken(contractId, stakingToken, 10, client);
+            client.setOperator(bobAccountId, bobKey);
+            await addToken(contractId, stakingToken, 10, client);
+            client.setOperator(operatorAccountId, operatorPrKey);
+            await addToken(contractId, createRewardToken1, 10, client);
+            await addToken(contractId, createRewardToken2, 10, client);
+            client.setOperator(aliceAccountId, aliceKey);
+            await claimAllReward(contractId, 0, client);
+            client.setOperator(bobAccountId, bobKey);
+            await claimAllReward(contractId, 0, client);
+            const aliceBalance2 = await tokenBalance(aliceAccountId, client);
+            const bobBalance2 = await tokenBalance(bobAccountId, client);
+            const balanceAliceReward3 = aliceBalance2.tokens.get(createRewardToken1).toString();
+            const balanceAliceReward4 = aliceBalance2.tokens.get(createRewardToken2).toString();
+            const balanceBobReward3 = bobBalance2.tokens.get(createRewardToken1).toString();
+            const balanceBobReward4 = bobBalance2.tokens.get(createRewardToken2).toString();
+            expect(balanceAliceReward1).equals('500000000');
+            expect(balanceBobReward1).equals('500000000');
+            expect(balanceAliceReward2).equals('500000000');
+            expect(balanceBobReward2).equals('500000000');
+            expect(balanceAliceReward3).equals('1000000000');
+            expect(balanceBobReward3).equals('1000000000');
+            expect(balanceAliceReward4).equals('1000000000');
+            expect(balanceBobReward4).equals('1000000000');
+        });
+    });
 })
 
-// it('two people, two type of reward, all claim', async function () {
-//     client.setOperator(aliceAccountId, aliceKey);
-//     await addStakeAccount(contractId, 10, client);
-//     client.setOperator(bobAccountId, bobKey);
-//     await addStakeAccount(contractId, 10, client);
-//     client.setOperator(operatorAccountId, operatorPrKey);
-//     await addReward(contractId, createRewardToken1, 10);
-//     await addReward(contractId, createRewardToken2, 10);
-//     client.setOperator(aliceAccountId, aliceKey);
-//     tokenArray.push(createRewardToken1.toSolidityAddress(), createRewardToken2.toSolidityAddress())
-//     const claimAlice = await claimSpecificsReward(contractId, tokenArray, client);
-//     // client.setOperator(bobAccountId, bobKey);
-//     // const claimBob = await claimAllReward(contractId, tokenArray, client);
-//     expect(claimAlice).equals('500000000');
-//     // expect(claimBob).equals('50000000');
-// });
