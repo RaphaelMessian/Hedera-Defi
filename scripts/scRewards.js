@@ -115,7 +115,7 @@ async function main() {
     const notifyRewardTx = await new ContractExecuteTransaction()
         .setContractId(scRewardsContract)
         .setFunction("addToken", contractFunctionParameters)
-        .setGas(1500000)
+        .setGas(2500000)
         .execute(client);
         
     const notifyRewardRx = await notifyRewardTx.getReceipt(client);
@@ -154,7 +154,6 @@ async function main() {
     const getRewardRx = await getRewardTx.getReceipt(client);
     const rewardRecord = await getRewardTx.getRecord(client);
     const totalReward = rewardRecord.contractFunctionResult.getInt256(0);
-    console.log(`- Reward Claimed ${totalReward}.`);
     console.log(`- Get reward transaction status ${getRewardRx.status.toString()}.`);
     return totalReward.toString();
  }
