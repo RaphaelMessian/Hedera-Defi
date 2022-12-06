@@ -15,7 +15,7 @@ async function scRewardsDeploy() {
     operatorPrKey
   );
 
-  const lockPeriod = 1;
+  const lockPeriod = 0;
 
   const rawdataSCRewards = fs.readFileSync(`${__dirname}/../artifacts/contracts/Rewards/SCRewards.sol/SCRewards.json`);
   const rawdataSCRewardsContractJSon = JSON.parse(rawdataSCRewards);

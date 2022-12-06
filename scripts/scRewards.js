@@ -8,21 +8,21 @@ let client = getClient();
 const operatorPrKey = PrivateKey.fromString(process.env.OPERATOR_KEY);
 const operatorPuKey = operatorPrKey.publicKey;
 const operatorAccountId = AccountId.fromString(process.env.OPERATOR_ID);
-const scRewardsContract = ContractId.fromString('0.0.48908703');
+const scRewardsContract = ContractId.fromString('0.0.49038945');
 
 async function main() {
-    const aliceKey = PrivateKey.generateED25519();
-    const aliceAccountId = await createAccount(client, aliceKey, 10);
-    console.log(`- Alice account id created: ${aliceAccountId.toString()}`);
-    // const BobKey = PrivateKey.generateED25519();
-    // const BobAccountId = await createAccount(client, BobKey, 10);
-    // console.log(`- Bob account id created: ${BobAccountId.toString()}`);
+    // const aliceKey = PrivateKey.generateED25519();
+    // const aliceAccountId = await createAccount(client, aliceKey, 10);
+    // console.log(`- Alice account id created: ${aliceAccountId.toString()}`);
+    // // const BobKey = PrivateKey.generateED25519();
+    // // const BobAccountId = await createAccount(client, BobKey, 10);
+    // // console.log(`- Bob account id created: ${BobAccountId.toString()}`);
 
-    const createStackingToken = await createFungibleToken("Stacking Token", "ST", aliceAccountId, aliceKey.publicKey, client, aliceKey);
-    const createRewardToken1 = await createFungibleToken("Reward Token 1", "RT1", operatorAccountId, operatorPuKey, client, operatorPrKey);
-    // const createRewardToken2 = await createFungibleToken("Reward Token 2", "RT2", operatorAccountId, operatorPuKey, client, operatorPrKey);
-    console.log(`- Stacking Token ${createStackingToken}, Stacking Token Address ${createStackingToken.toSolidityAddress()}`);
-    console.log(`- Reward Token 1 created ${createRewardToken1}, Reward Token 1 Address ${createRewardToken1.toSolidityAddress()}`);
+    // const createStackingToken = await createFungibleToken("Stacking Token", "ST", aliceAccountId, aliceKey.publicKey, client, aliceKey);
+    // const createRewardToken1 = await createFungibleToken("Reward Token 1", "RT1", operatorAccountId, operatorPuKey, client, operatorPrKey);
+    // // const createRewardToken2 = await createFungibleToken("Reward Token 2", "RT2", operatorAccountId, operatorPuKey, client, operatorPrKey);
+    // console.log(`- Stacking Token ${createStackingToken}, Stacking Token Address ${createStackingToken.toSolidityAddress()}`);
+    // console.log(`- Reward Token 1 created ${createRewardToken1}, Reward Token 1 Address ${createRewardToken1.toSolidityAddress()}`);
     // console.log(`- Reward Token 2 created ${createRewardToken2}, Reward Token 2 Address ${createRewardToken2.toSolidityAddress()}`);
     // const mintStackingToken = await mintToken(createStackingToken, client, 10, aliceKey);
     // console.log(`- New 10 Stacking Token minted transaction status: ${mintStackingToken.status.toString()}`);
@@ -42,8 +42,14 @@ async function main() {
     // const mintRewardToken = await mintToken(createRewardToken1, client, 10, operatorPrKey);
     // console.log(`- New 10 Reward Token minted transaction status: ${mintRewardToken.status.toString()}`);
 
-    client.setOperator(operatorAccountId, operatorPrKey);
-    await initialize(scRewardsContract, createStackingToken);
+    // client.setOperator(operatorAccountId, operatorPrKey);
+    // await initialize(scRewardsContract, createStackingToken);
+    // client.setOperator(aliceAccountId, aliceKey);
+    // await addToken(scRewardsContract, createStackingToken, 10, client);
+    // client.setOperator(operatorAccountId, operatorPrKey);
+    // await addToken(scRewardsContract, createRewardToken1, 10, client);
+    // client.setOperator(aliceAccountId, aliceKey);
+    await unlock(scRewardsContract, 0, 10, client);
     // client.setOperator(aliceAccountId, aliceKey);
     // await addStakeAccount(scRewardsContract, 50);
     // // client.setOperator(BobAccountId, BobKey);
@@ -176,6 +182,24 @@ async function main() {
     return totalReward.toString();
  }
 
+ async function unlock(scRewardsContract, startPosition, amount, client) {
+    let contractFunctionParameters = new ContractFunctionParameters()
+        .addUint256(startPosition)
+        .addUint256(amount*1e8);
+
+    const unlockTx = await new ContractExecuteTransaction()
+        .setContractId(scRewardsContract)
+        .setFunction("unlock", contractFunctionParameters)
+        .setGas(3500000)
+        .execute(client);
+        
+    const unlockRx = await unlockTx.getReceipt(client);
+    // const unlockRecord = await unlockRx.getRecord(client);
+    // const unlock = unlockRecord.contractFunctionResult.getInt256(0);
+    console.log(`- unlock transaction status ${unlockRx.status.toString()}.`);
+    // return unlock.toString();
+ }
+
  module.exports = {
     initialize,
     // addStakeAccount,
@@ -183,11 +207,12 @@ async function main() {
     addToken,
     withdraw,
     claimAllReward,
-    claimSpecificsReward
+    claimSpecificsReward,
+    unlock
 }
 
-//  main()
-//   .catch((error) => {
-//     console.error(error);
-//     process.exit(1);
-//   });
+ main()
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });

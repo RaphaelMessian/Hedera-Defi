@@ -14,8 +14,7 @@ contract SCRewards {
     using PRBMathUD60x18 for uint256;
 
     IERC20 public stakingToken;
-    uint256 public constant ONE_DAY = 1 days;
-    uint256 lockPeriod;
+    uint lockPeriod;
 
     uint public totalTokens;
     address[] tokenAddress;
@@ -24,6 +23,7 @@ contract SCRewards {
 
     struct UserInfo {
         uint num_shares;
+        uint num_shares_unlock;
         mapping(address => uint) lastClaimedAmountT;
         uint lockTimeStart;
         bool exist;
@@ -37,9 +37,9 @@ contract SCRewards {
     mapping(address =>  UserInfo) public userContribution;
     mapping (address => RewardsInfo) public rewardsAddress;
 
-    constructor(uint256 _lockPeriod) { //number of blocks
+    constructor(uint _lockPeriod) { //number of blocks
         owner = msg.sender;
-        lockPeriod = _lockPeriod*ONE_DAY;
+        lockPeriod = _lockPeriod;
     }
 
     modifier onlyOwner() {
@@ -65,16 +65,19 @@ contract SCRewards {
             SafeHTS.safeTransferToken(address(stakingToken), msg.sender, address(this), int64(uint64(_amount)));
             userContribution[msg.sender].num_shares = _amount;
             userContribution[msg.sender].exist = true;
+            userContribution[msg.sender].lockTimeStart = block.timestamp;
             totalTokens += _amount;
         } else {
             SafeHTS.safeTransferToken(address(stakingToken), msg.sender, address(this), int64(uint64(_amount)));
             userContribution[msg.sender].num_shares += _amount;
+            // userContribution[msg.sender].lockTimeStart = block.timestamp;
             totalTokens += _amount;
         }
     }
 
     function addReward(address _token, uint _amount) internal onlyOwner { //deposit
         require(_amount != 0, "please provide amount");
+        require(totalTokens != 0, "no token staked yet");
         uint perShareRewards;
         perShareRewards = _amount.div(totalTokens);
         if(!rewardsAddress[_token].exist) {
@@ -106,25 +109,14 @@ contract SCRewards {
         totalTokens -= _amount;
     }
 
-    // function unlock(uint _amount) public {
-    //     require(_amount != 0, "please provide amount");
-    //     if(userContribution[msg.sender].lockTimeStart + lockPeriod < block.timestamp){
-
-    //     }
-    //     withdraw(_amount);
-    // }
-
-    
-    // function claimSpecificsReward(address[] memory _token) public returns (uint){ //claim
-    //     for(uint i; i < _token.length; i++){
-    //         uint reward;
-    //         address token = tokenAddress[i];
-    //         reward = (rewardsAddress[token].amount - userContribution[msg.sender].lastClaimedAmountT[token]).mul(userContribution[msg.sender].num_shares);
-    //         userContribution[msg.sender].lastClaimedAmountT[token] = rewardsAddress[token].amount;
-    //         SafeHTS.safeTransferToken(address(token), address(this), address(msg.sender), int64(uint64(reward)));
-    //     }
-    //     return tokenAddress.length;
-    // }
+    function unlock(uint _startPosition, uint _amount) public {
+        require(_amount != 0, "please provide amount");
+        if(userContribution[msg.sender].lockTimeStart + lockPeriod < block.timestamp){
+            revert("Lock period not reach");
+        } else {
+            withdraw(_startPosition, _amount);
+        }
+    }
 
     function claimAllReward(uint _startPosition) public returns (uint, uint) { //claim
         for(uint i = _startPosition; i < tokenAddress.length && i < _startPosition + 10; i++){
@@ -142,6 +134,20 @@ contract SCRewards {
 
     function getLockedAmount() public view returns (uint) {
         return userContribution[msg.sender].num_shares;
+    }
+
+    function claimSpecificsReward(address[] memory _token) public returns (uint){ //claim
+        for(uint i; i < _token.length; i++){
+            uint reward;
+            address token = _token[i];
+            if(userContribution[msg.sender].lastClaimedAmountT[token] == 0){
+                SafeHTS.safeAssociateToken(token, address(msg.sender));
+            }
+            reward = (rewardsAddress[token].amount - userContribution[msg.sender].lastClaimedAmountT[token]).mul(userContribution[msg.sender].num_shares);
+            userContribution[msg.sender].lastClaimedAmountT[token] = rewardsAddress[token].amount;
+            SafeHTS.safeTransferToken(address(token), address(this), address(msg.sender), int64(uint64(reward)));
+        }
+        return _token.length;
     }
 }
 
