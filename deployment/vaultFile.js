@@ -4,7 +4,7 @@ const {Client, AccountId, PrivateKey, ContractFunctionParameters} = require("@ha
 const fs = require('fs');
 require('dotenv').config({path: __dirname + '/'});
 
-async function scRewardsFile() {
+async function VaultFile() {
 
   let client = Client.forTestnet();
   const operatorPrKey = PrivateKey.fromString(process.env.OPERATOR_KEY);
@@ -15,20 +15,20 @@ async function scRewardsFile() {
     operatorPrKey
   );
 
-  const rawdataSCRewards = fs.readFileSync(`${__dirname}/../artifacts/contracts/Rewards/SCRewards.sol/SCRewards.json`);
-  const rawdataSCRewardsContractJSon = JSON.parse(rawdataSCRewards);
-  const SCRewardsContractByteCode = rawdataSCRewardsContractJSon.bytecode;
-  const createSCRewardsFile = await storeContractFile(client, SCRewardsContractByteCode, operatorPrKey)
-  console.log(`- File created ${createSCRewardsFile.toString()} -`);
+  const rawdataVault = fs.readFileSync(`${__dirname}/../artifacts/contracts/Rewards/Vault.sol/Vault.json`);
+  const rawdataVaultContractJSon = JSON.parse(rawdataVault);
+  const VaultContractByteCode = rawdataVaultContractJSon.bytecode;
+  const createVaultFile = await storeContractFile(client, VaultContractByteCode, operatorPrKey)
+  console.log(`- File created ${createVaultFile.toString()} -`);
   
-  return createSCRewardsFile;
+  return createVaultFile;
 }
 
 module.exports = {
-    scRewardsFile
+    VaultFile
 };
 
-scRewardsFile().catch((error) => {
+VaultFile().catch((error) => {
   console.error(error);
   process.exitCode = 1;
 });

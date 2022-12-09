@@ -9,7 +9,7 @@ import "../common/safe-HTS/SafeHTS.sol";
 import "prb-math/contracts/PRBMathUD60x18.sol";
 
 
-contract SCRewards {
+contract Vault {
 
     using PRBMathUD60x18 for uint256;
 
@@ -23,7 +23,6 @@ contract SCRewards {
 
     struct UserInfo {
         uint num_shares;
-        uint num_shares_unlock;
         mapping(address => uint) lastClaimedAmountT;
         uint lockTimeStart;
         bool exist;
@@ -37,7 +36,7 @@ contract SCRewards {
     mapping(address =>  UserInfo) public userContribution;
     mapping (address => RewardsInfo) public rewardsAddress;
 
-    constructor(uint _lockPeriod) { //number of blocks
+    constructor(uint _lockPeriod) {
         owner = msg.sender;
         lockPeriod = _lockPeriod;
     }
@@ -54,7 +53,7 @@ contract SCRewards {
     }
 
     //we need to set the amount of each reward address to the lastClaimed amount of the user
-    function addStakeAccount(uint _amount) internal { 
+    function addStakeAccount(uint _amount) internal returns (uint timeStamp){ 
         require(_amount != 0, "please provide amount");
         for(uint i; i < tokenAddress.length; i++){
             address token = tokenAddress[i];
@@ -67,10 +66,11 @@ contract SCRewards {
             userContribution[msg.sender].exist = true;
             userContribution[msg.sender].lockTimeStart = block.timestamp;
             totalTokens += _amount;
+            return block.timestamp;
         } else {
             SafeHTS.safeTransferToken(address(stakingToken), msg.sender, address(this), int64(uint64(_amount)));
             userContribution[msg.sender].num_shares += _amount;
-            // userContribution[msg.sender].lockTimeStart = block.timestamp;
+            userContribution[msg.sender].lockTimeStart = block.timestamp;
             totalTokens += _amount;
         }
     }
@@ -109,12 +109,12 @@ contract SCRewards {
         totalTokens -= _amount;
     }
 
-    function unlock(uint _startPosition, uint _amount) public {
-        require(_amount != 0, "please provide amount");
-        if(userContribution[msg.sender].lockTimeStart + lockPeriod < block.timestamp){
-            revert("Lock period not reach");
-        } else {
+    function unlock(uint _startPosition, uint _amount) public returns(uint, uint, uint) {
+        if((userContribution[msg.sender].lockTimeStart + lockPeriod) < block.timestamp) {
             withdraw(_startPosition, _amount);
+            return (block.timestamp,userContribution[msg.sender].lockTimeStart,lockPeriod);
+        } else {
+            revert("you can't unlock your token because the lock period is not reached");
         }
     }
 

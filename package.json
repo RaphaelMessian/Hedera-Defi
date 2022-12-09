@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "mocha -r dotenv/config --timeout 50000"
+    "test": "mocha -r dotenv/config --timeout 100000"
   },
   "author": "",
   "license": "ISC",
