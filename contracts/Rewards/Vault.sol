@@ -55,12 +55,12 @@ contract Vault {
     //we need to set the amount of each reward address to the lastClaimed amount of the user
     function addStakeAccount(uint _amount) internal returns (uint timeStamp){ 
         require(_amount != 0, "please provide amount");
+        for(uint i; i < tokenAddress.length; i++){
+            address token = tokenAddress[i];
+            userContribution[msg.sender].lastClaimedAmountT[token] = rewardsAddress[token].amount;
+            SafeHTS.safeAssociateToken(token, address(msg.sender));
+        }
         if(!userContribution[msg.sender].exist) {
-            for(uint i; i < tokenAddress.length; i++){
-                address token = tokenAddress[i];
-                userContribution[msg.sender].lastClaimedAmountT[token] = rewardsAddress[token].amount;
-                SafeHTS.safeAssociateToken(token, address(msg.sender));
-            }
             SafeHTS.safeTransferToken(address(stakingToken), msg.sender, address(this), int64(uint64(_amount)));
             userContribution[msg.sender].num_shares = _amount;
             userContribution[msg.sender].exist = true;
