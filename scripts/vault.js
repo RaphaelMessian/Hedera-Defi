@@ -72,7 +72,7 @@ async function main() {
     // await claimReward(VaultContract, aliceAccountId, client);
  }
 
- async function initialize(VaultContract, stakingToken) {
+ async function initializeVault(VaultContract, stakingToken) {
     let contractFunctionParameters = new ContractFunctionParameters()
         .addAddress(stakingToken.toSolidityAddress());
 
@@ -183,7 +183,7 @@ async function main() {
  }
 
  module.exports = {
-    initialize,
+    initializeVault,
     // addStakeAccount,
     // addReward,
     addToken,
