@@ -17,10 +17,12 @@
     "@hashgraph/hethers": "^1.2.2",
     "@hashgraph/sdk": "^2.18.5",
     "@openzeppelin/contracts": "^4.7.3",
+    "axios": "^1.2.2",
     "chai": "^4.3.6",
     "dotenv": "^16.0.3",
     "fs": "^0.0.1-security",
     "mocha": "^10.1.0",
-    "prb-math": "^2.4.3"
+    "prb-math": "^2.4.3",
+    "web3": "^1.8.1"
   }
 }
